@@ -1,5 +1,6 @@
 import { useRef } from 'react';
 import { useAuth } from '../../contexts/AuthContext';
+import { useNotifications } from '../../hooks/useNotifications';
 
 interface HeaderProps {
   title?: string;
@@ -10,6 +11,7 @@ interface HeaderProps {
 export function Header({ title = 'CMail', showProfile = true, onListsClick }: HeaderProps) {
   const { user, signOut, uploadAvatar } = useAuth();
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const { permission, loading: notifLoading, requestPermission } = useNotifications({ userId: user?.uid });
 
   const handleAvatarClick = () => {
     fileInputRef.current?.click();
@@ -87,6 +89,61 @@ export function Header({ title = 'CMail', showProfile = true, onListsClick }: He
       </div>
 
       <div className="flex items-center gap-2">
+        {/* Notification Bell */}
+        {permission !== 'unsupported' && (
+          <button
+            onClick={permission !== 'granted' ? requestPermission : undefined}
+            disabled={notifLoading || permission === 'denied'}
+            className={`p-2 rounded-full transition-colors ${
+              permission === 'granted'
+                ? 'text-indigo-600'
+                : permission === 'denied'
+                ? 'text-gray-400 cursor-not-allowed'
+                : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100'
+            }`}
+            aria-label={
+              permission === 'granted'
+                ? 'Notifications enabled'
+                : permission === 'denied'
+                ? 'Notifications blocked'
+                : 'Enable notifications'
+            }
+            title={
+              permission === 'granted'
+                ? 'Notifications enabled'
+                : permission === 'denied'
+                ? 'Notifications blocked - check browser settings'
+                : 'Click to enable notifications'
+            }
+          >
+            {notifLoading ? (
+              <div className="w-6 h-6 border-2 border-gray-300 border-t-indigo-600 rounded-full animate-spin" />
+            ) : (
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                className="w-6 h-6"
+                fill={permission === 'granted' ? 'currentColor' : 'none'}
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+                strokeWidth={2}
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"
+                />
+                {permission === 'denied' && (
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    d="M18.364 18.364L5.636 5.636"
+                  />
+                )}
+              </svg>
+            )}
+          </button>
+        )}
+
         {onListsClick && (
           <button
             onClick={onListsClick}

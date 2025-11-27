@@ -2,6 +2,7 @@ import { initializeApp } from 'firebase/app';
 import { getAuth, GoogleAuthProvider } from 'firebase/auth';
 import { getFirestore } from 'firebase/firestore';
 import { getStorage } from 'firebase/storage';
+import { getMessaging, isSupported } from 'firebase/messaging';
 
 // Firebase configuration
 const firebaseConfig = {
@@ -35,5 +36,20 @@ export const db = getFirestore(app);
 
 // Storage
 export const storage = getStorage(app);
+
+// Messaging (for push notifications)
+// Note: Messaging only works in supported browsers (not Safari iOS < 16.4)
+export const getMessagingInstance = async () => {
+  const supported = await isSupported();
+  if (supported) {
+    return getMessaging(app);
+  }
+  return null;
+};
+
+// VAPID key for web push - generate this in Firebase Console:
+// Project Settings > Cloud Messaging > Web Push certificates > Generate key pair
+// Replace this placeholder with your actual VAPID key
+export const VAPID_KEY = 'YOUR_VAPID_KEY_HERE';
 
 export default app;
