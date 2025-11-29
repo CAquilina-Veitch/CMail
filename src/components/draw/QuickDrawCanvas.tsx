@@ -331,9 +331,15 @@ export function QuickDrawCanvas({ isOpen, onClose, onSend }: QuickDrawCanvasProp
       height: CANVAS_HEIGHT,
     });
 
-    handleClear();
+    // Clear canvas directly without saving to history (we're closing anyway)
+    const ctx = canvasRef.current.getContext('2d');
+    if (ctx) {
+      ctx.fillStyle = '#ffffff';
+      ctx.fillRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
+    }
+    setHasContent(false);
     onClose();
-  }, [hasContent, onSend, onClose, handleClear]);
+  }, [hasContent, onSend, onClose]);
 
   return (
     <AnimatePresence>
