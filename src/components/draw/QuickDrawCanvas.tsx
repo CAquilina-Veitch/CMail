@@ -23,7 +23,7 @@ export function QuickDrawCanvas({ isOpen, onClose, onSend }: QuickDrawCanvasProp
   const [hue, setHue] = useState(0);
   const [saturation, setSaturation] = useState(0);
   const [lightness, setLightness] = useState(20);
-  const [penSize, setPenSize] = useState(4);
+  const [penSize, setPenSize] = useState(6);
 
   // Click outside popup
   const [showPopup, setShowPopup] = useState(false);
@@ -251,10 +251,35 @@ export function QuickDrawCanvas({ isOpen, onClose, onSend }: QuickDrawCanvasProp
       longPressPosRef.current = point;
       longPressTimerRef.current = setTimeout(() => {
         if (longPressPosRef.current) {
-          // Long press detected - do fill
-          floodFill(longPressPosRef.current.x, longPressPosRef.current.y);
-          cancelLongPress();
-          setIsDrawing(false);
+          // Long press detected - restore canvas to before the dot was drawn, then fill
+          const canvas = canvasRef.current;
+          const ctx = canvas?.getContext('2d');
+          if (canvas && ctx) {
+            // Pop the history state (canvas before dot) and restore it
+            setHistory(prev => {
+              if (prev.length > 0) {
+                const newHistory = [...prev];
+                const previousState = newHistory.pop();
+                if (previousState) {
+                  ctx.putImageData(previousState, 0, 0);
+                }
+                return newHistory;
+              }
+              return prev;
+            });
+          }
+          // Small delay to ensure state is restored before fill
+          setTimeout(() => {
+            if (longPressPosRef.current) {
+              floodFill(longPressPosRef.current.x, longPressPosRef.current.y);
+            }
+            cancelLongPress();
+            setIsDrawing(false);
+          }, 10);
+          // Vibrate to indicate fill mode
+          if (navigator.vibrate) {
+            navigator.vibrate(50);
+          }
         }
       }, LONG_PRESS_DURATION);
 
@@ -499,8 +524,8 @@ export function QuickDrawCanvas({ isOpen, onClose, onSend }: QuickDrawCanvasProp
                 <span className="text-xs text-gray-500">Size</span>
                 <input
                   type="range"
-                  min="1"
-                  max="20"
+                  min="2"
+                  max="40"
                   value={penSize}
                   onChange={(e) => setPenSize(Number(e.target.value))}
                   className="h-48 w-6 appearance-none bg-gray-200 rounded cursor-pointer"
