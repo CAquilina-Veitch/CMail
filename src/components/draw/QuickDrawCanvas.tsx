@@ -25,6 +25,9 @@ export function QuickDrawCanvas({ isOpen, onClose, onSend }: QuickDrawCanvasProp
   const [lightness, setLightness] = useState(20);
   const [penSize, setPenSize] = useState(4);
 
+  // Click outside popup
+  const [showPopup, setShowPopup] = useState(false);
+
   // Undo history
   const [history, setHistory] = useState<ImageData[]>([]);
   const isStrokeStartRef = useRef(false);
@@ -341,6 +344,12 @@ export function QuickDrawCanvas({ isOpen, onClose, onSend }: QuickDrawCanvasProp
     onClose();
   }, [hasContent, onSend, onClose]);
 
+  // Handle click outside - show popup instead of closing
+  const handleBackdropClick = useCallback(() => {
+    setShowPopup(true);
+    setTimeout(() => setShowPopup(false), 1200);
+  }, []);
+
   return (
     <AnimatePresence>
       {isOpen && (
@@ -349,8 +358,22 @@ export function QuickDrawCanvas({ isOpen, onClose, onSend }: QuickDrawCanvasProp
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
           className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-2"
-          onClick={onClose}
+          onClick={handleBackdropClick}
         >
+          {/* Click outside popup */}
+          <AnimatePresence>
+            {showPopup && (
+              <motion.div
+                initial={{ opacity: 0, y: -20 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -20 }}
+                transition={{ duration: 0.2 }}
+                className="fixed top-4 left-1/2 -translate-x-1/2 bg-pink-500 text-white px-6 py-3 rounded-full shadow-lg text-lg font-medium z-[60]"
+              >
+                Hiiii mashaaa MMMWAH
+              </motion.div>
+            )}
+          </AnimatePresence>
           <motion.div
             initial={{ scale: 0.9, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
