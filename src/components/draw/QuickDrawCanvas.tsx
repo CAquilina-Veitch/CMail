@@ -53,7 +53,7 @@ export function QuickDrawCanvas({ isOpen, onClose, onSend }: QuickDrawCanvasProp
   useEffect(() => {
     if (isOpen && canvasRef.current) {
       const canvas = canvasRef.current;
-      const ctx = canvas.getContext('2d');
+      const ctx = canvas.getContext('2d', { willReadFrequently: true });
       const dpr = dprRef.current;
 
       // Set the canvas internal size scaled by DPR
@@ -177,7 +177,7 @@ export function QuickDrawCanvas({ isOpen, onClose, onSend }: QuickDrawCanvasProp
     const tempCanvas = document.createElement('canvas');
     tempCanvas.width = 1;
     tempCanvas.height = 1;
-    const tempCtx = tempCanvas.getContext('2d');
+    const tempCtx = tempCanvas.getContext('2d', { willReadFrequently: true });
     if (!tempCtx) return;
     tempCtx.fillStyle = getCurrentColor();
     tempCtx.fillRect(0, 0, 1, 1);
